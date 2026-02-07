@@ -28,15 +28,22 @@ export const createProduct = (req, res) => {
 
 // GET ALL
 export const getAllProducts = (req, res) => {
-  db.query(
-    "SELECT * FROM products",
-    (err, result) => {
-      if (err)
-        return res.status(500).json({ success: false, error: err });
+  const { categoryId } = req.query;
 
-      res.json({ success: true, data: result });
-    }
-  );
+  let query = "SELECT * FROM products";
+  let params = [];
+
+  if (categoryId) {
+    query += " WHERE category_id = ?";
+    params.push(categoryId);
+    
+  }
+
+  db.query(query, params, (err, result) => {
+    if (err) return res.status(500).json({ success: false, error: err });
+
+    res.json({ success: true, data: result });
+  });
 };
 
 // GET BY ID

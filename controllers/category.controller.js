@@ -101,10 +101,23 @@ export const deleteCategory = (req, res) => {
     "DELETE FROM categories WHERE id = ?",
     [id],
     (err, result) => {
-      if (err) return res.status(500).json(err);
+      if (err) {
+        console.error("Error deleting category:", err);
+        if (
+          err.code === "ER_ROW_IS_REFERENCED_2" ||
+          err.code === "ER_ROW_IS_REFERENCED_1" ||
+          err.code === "ER_ROW_IS_REFERENCED"
+        ) {
+          return res.status(409).json({
+            message:
+              "Cannot delete category because it has related products. Delete products first."
+          });
+        }
+        return res.status(500).json(err);
+      }
 
       if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Category not found" });
+        return res.status(200).json({ message: "Category not found" });
       }
 
       res.json({ message: "Category deleted" });
